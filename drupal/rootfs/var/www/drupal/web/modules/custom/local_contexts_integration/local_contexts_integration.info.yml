@@ -1,0 +1,6 @@
+name: "Local Contexts Integration"
+type: module
+core_version_requirement: ^10
+dependencies:
+  - drupal:block
+description: "Integrates the Local Contexts API with Islandora to support Traditional Knowledge Labels digital collections."

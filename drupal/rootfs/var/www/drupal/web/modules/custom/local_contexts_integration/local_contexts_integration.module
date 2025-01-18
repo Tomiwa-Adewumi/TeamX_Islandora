@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * Provides hooks for the Local Contexts Integration module.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function local_contexts_integration_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.local_contexts_integration':
+      return '<p>' . t('Provides integration with the Local Contexts API for displaying Traditional Knowledge Labels.') . '</p>';
+  }
+}

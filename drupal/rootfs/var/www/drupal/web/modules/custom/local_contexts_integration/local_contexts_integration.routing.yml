@@ -1,0 +1,7 @@
+local_contexts_integration.settings:
+  path: "/admin/config/local-contexts-integration"
+  defaults:
+    _form: '\Drupal\local_contexts_integration\Form\LocalContextsSettingsForm'
+    _title: "Local Contexts Integration Settings"
+  requirements:
+    _permission: "administer local contexts integration"
