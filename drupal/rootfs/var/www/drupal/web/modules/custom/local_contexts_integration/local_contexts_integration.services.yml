@@ -1,0 +1,4 @@
+services:
+  local_contexts_integration.controller:
+    class: Drupal\local_contexts_integration\Controller\LocalContextsController
+    arguments: ["@http_client"]

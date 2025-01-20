@@ -14,3 +14,18 @@ function local_contexts_integration_help($route_name, \Drupal\Core\Routing\Route
       return '<p>' . t('Provides integration with the Local Contexts API for displaying Traditional Knowledge Labels.') . '</p>';
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function local_contexts_integration_theme() {
+  return [
+    'local_contexts_block' => [
+      'variables' => [
+        'title' => '',
+        'content' => '',
+      ],
+      'template' => 'block--local-contexts', // Matches the Twig file name.
+    ],
+  ];
+}
