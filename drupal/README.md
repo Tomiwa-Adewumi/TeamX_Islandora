@@ -25,7 +25,6 @@ image for additional information.
 If updating the [solr] image be sure to update the configuration in
 [./rootfs/opt/solr/server/solr/default/conf]
 
-
 [drupal]: https://github.com/Islandora-Devops/isle-buildkit/tree/main/drupal#readme
 [solr]: https://github.com/Islandora-Devops/isle-buildkit/tree/main/solr#readme
 [./rootfs/opt/solr/server/solr/default/conf]: ./rootfs/opt/solr/server/solr/default/conf
