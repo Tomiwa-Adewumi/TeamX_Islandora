@@ -1,0 +1,5 @@
+local_contexts_integration.settings:
+  title: "Local Contexts Integration"
+  description: "Settings for Local Contexts Integration."
+  route_name: local_contexts_integration.settings
+  parent: system.admin_config_services
