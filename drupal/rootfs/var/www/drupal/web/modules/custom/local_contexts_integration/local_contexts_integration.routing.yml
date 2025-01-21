@@ -1,0 +1,25 @@
+local_contexts_integration.settings:
+  path: "/admin/config/local-contexts-integration"
+  defaults:
+    _form: '\Drupal\local_contexts_integration\Form\LocalContextsSettingsForm'
+    _title: "Local Contexts Integration Settings"
+  requirements:
+    _role: "authenticated"
+  options:
+    _admin_route: TRUE
+
+  # not sure what we are going fo ryet , shoulld clarify with the guy
+  # _permission: "access local contexts integration settings"- if going thi sroute will need to create a .permissions.yml
+  #   access local contexts integration settings:
+  # title: 'Access Local Contexts Integration Settings'
+  # description: 'Allows access to the Local Contexts Integration Settings page.'
+  # restrict access: TRUE
+
+# for testing the fetch method
+local_contexts_integration.test_fetch_project_data:
+  path: "/local-contexts-integration/test-fetch"
+  defaults:
+    _controller: '\Drupal\local_contexts_integration\Controller\LocalContextsController::testFetchProjectData'
+    _title: "Test Fetch Project Data"
+  requirements:
+    _role: "authenticated"
