@@ -58,9 +58,6 @@ class LocalContextsController extends ControllerBase {
     // $project_id = "452cb2ab-f26d-46c5-ac96-4fddad717286";
 
 
-
-
-
     // Build the API endpoint URL.
     $url = 'https://sandbox.localcontextshub.org/api/v2/projects/' . $project_id . '/';
 
