@@ -1,4 +1,5 @@
 services:
   local_contexts_integration.controller:
     class: Drupal\local_contexts_integration\Controller\LocalContextsController
-    arguments: ["@http_client"]
+    arguments: ["@http_client", "@current_route_match"]
+
