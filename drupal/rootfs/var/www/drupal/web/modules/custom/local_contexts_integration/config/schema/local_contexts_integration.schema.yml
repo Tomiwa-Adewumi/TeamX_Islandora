@@ -5,6 +5,9 @@ local_contexts_integration.settings:
     api_key:
       type: string
       label: "API Key"
-    project_id:
+    api_url:
       type: string
-      label: "Project ID"
+      label: "API Base URL"
+    field_identifier:
+      type: string
+      label: "Default Field for Retrieving Pr"
