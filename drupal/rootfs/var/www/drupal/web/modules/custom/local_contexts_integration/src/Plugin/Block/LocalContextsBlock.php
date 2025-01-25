@@ -54,28 +54,35 @@ class LocalContextsBlock extends BlockBase implements ContainerFactoryPluginInte
     );
   }
 
-  /**
-   * {@inheritdoc}
-   */
+/**
+ * {@inheritdoc}
+ */
   public function build() {
     // Fetch data from the Local Contexts controller.
     $data = $this->localContextsController->fetchProjectData();
 
-    // Shorten the data for display.
-    $output = '<p>No data available.</p>';
-    if ($data) {
-      $short_data = json_encode($data);
-      if (strlen($short_data) > 500) {
-        $short_data = substr($short_data, 0, 500) . '...';
-      }
-      $content = $short_data;
-    }
-  
-    // Render the block using a Twig template.
+    
+    // Ensure the data structure is valid and defaults are set.
+    $unique_id = $data['unique_id'] ?? 'N/A';
+    $title = $data['title'] ?? 'Untitled Project';
+    $date_added = $data['date_added'] ?? 'Unknown';
+    $date_modified = $data['date_modified'] ?? 'Unknown';
+    $tk_labels = $data['tk_labels'] ?? [];
+
+
+    // Render the block with structured data.
     return [
       '#theme' => 'local_contexts_block',
-      '#title' => $this->t('Local Contexts Project Data'),
-      '#content' => $content,
+      '#unique_id' => $unique_id,
+      '#title' => $title,
+      '#date_added' => $date_added,
+      '#date_modified' => $date_modified,
+      '#tk_labels' => $tk_labels,
+      '#attached' => [
+        'library' => [
+          'local_contexts_integration/tk_labels',
+        ],
+      ],
       '#cache' => [
         'max-age' => 0,
       ],

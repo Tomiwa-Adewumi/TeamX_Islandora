@@ -9,11 +9,12 @@ dependencies:
   - drupal:block
   - drupal:field
   - drupal:media
-  - drupal:jsonapi # To handle JSON parsing and API integration.
+  - drupal:jsonapi
   - drupal:config
-  - drupal:views # If you plan to expose any data via views.
+  - drupal:views
+  - drupal:node
 
-# Additional metadata
+
 configure: local_contexts_integration.settings
 project: local_contexts_integration
 version: 1.0.0
