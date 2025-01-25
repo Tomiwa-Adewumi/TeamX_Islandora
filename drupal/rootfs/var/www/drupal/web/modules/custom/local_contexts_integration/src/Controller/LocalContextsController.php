@@ -56,11 +56,11 @@ class LocalContextsController extends ControllerBase {
   }
 
   /**
-   * Fetch project data, handling the node retrieval from the route.
-   *
-   * @return array|null
-   *   The API response data as an associative array, or NULL on failure.
-   */
+  * Fetch project data, handling the node retrieval from the route.
+  *
+  * @return array
+  *   The processed API response as a structured array, or an empty array on failure.
+  */
   public function fetchProjectData() {
     $node = $this->route_match->getParameter('node');
 
@@ -73,8 +73,9 @@ class LocalContextsController extends ControllerBase {
       : 'The route parameter is not a valid Node entity.';
 
     \Drupal::logger('local_contexts_integration')->warning($message);
-    return NULL;
+    return [];
   }
+
 
   /**
    * Fetch project data using a specific node.
@@ -82,44 +83,45 @@ class LocalContextsController extends ControllerBase {
    * @param \Drupal\node\Entity\Node $node
    *   The node entity.
    *
-   * @return array|null
-   *   The API response data as an associative array, or NULL on failure.
+   * @return array
+   *   The structured response data.
    */
   private function fetchProjectDataFromNode(Node $node) {
     $config = \Drupal::config('local_contexts_integration.settings');
     $field_identifier = $config->get('field_identifier');
 
-    \Drupal::logger('local_contexts_integration')->notice("Field Identifier: $field_identifier");
-
-    if (!$node->hasField($field_identifier)) {
-      return [
-        '#type' => 'markup',
-        '#markup' => "Error: The field '$field_identifier' is not attached to this node.",
-      ];
-    }
-
-    if ($node->get($field_identifier)->isEmpty()) {
-      return [
-        '#type' => 'markup',
-        '#markup' => "Error: The field '$field_identifier' is empty.",
-      ];
+    if (!$node->hasField($field_identifier) || $node->get($field_identifier)->isEmpty()) {
+      \Drupal::logger('local_contexts_integration')->warning("Field '$field_identifier' is missing or empty on node ID: {$node->id()}");
+      return [];
     }
 
     $project_id = $node->get($field_identifier)->value;
-    \Drupal::logger('local_contexts_integration')->notice("Field '$field_identifier' value retrieved: $project_id");
+    $raw_data = $this->performApiCall($project_id);
 
-    $project_data = $this->performApiCall($project_id);
-
-    return $project_data
-      ? [
-        '#type' => 'markup',
-        '#markup' => '<pre>' . print_r($project_data, TRUE) . '</pre>',
-      ]
-      : [
-        '#type' => 'markup',
-        '#markup' => 'Failed to fetch project data.',
-      ];
+    // Filter and structure the API response.
+    return $this->filterApiResponse($raw_data);
   }
+
+  
+  /**
+   * Filter the API response to keep only specified fields.
+   *
+   * @param array $data
+   *   The original API response data.
+   *
+   * @return array
+   *   The filtered response data.
+   */
+  private function filterApiResponse(array $data) {
+    return [
+      'unique_id' => $data['unique_id'] ?? null,
+      'title' => $data['title'] ?? null,
+      'date_added' => $data['date_added'] ?? null,
+      'date_modified' => $data['date_modified'] ?? null,
+      'tk_labels' => $data['tk_labels'] ?? [],
+    ];
+  }
+
 
   /**
    * Perform the actual API call to fetch project data.
@@ -127,8 +129,8 @@ class LocalContextsController extends ControllerBase {
    * @param string $project_id
    *   The project ID to fetch data for.
    *
-   * @return array|null
-   *   The API response data as an associative array, or NULL on failure.
+   * @return array
+   *   The raw API response data as an associative array, or an empty array on failure.
    */
   private function performApiCall(string $project_id) {
     $config = \Drupal::config('local_contexts_integration.settings');
@@ -137,14 +139,14 @@ class LocalContextsController extends ControllerBase {
 
     if (empty($api_url) || empty($api_key)) {
       \Drupal::logger('local_contexts_integration')->error('API URL or API Key is not configured.');
-      return NULL;
+      return [];
     }
 
     $url = $api_url . '/' . $project_id . '/';
 
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
       \Drupal::logger('local_contexts_integration')->error('Invalid API URL: @url', ['@url' => $url]);
-      return NULL;
+      return [];
     }
 
     try {
@@ -154,10 +156,16 @@ class LocalContextsController extends ControllerBase {
           'accept' => 'application/json',
         ],
       ]);
-      return json_decode($response->getBody(), TRUE);
+
+      // Decode the JSON response into an associative array.
+      $data = json_decode($response->getBody(), TRUE);
+
+
+      return is_array($data) ? $data : [];
     } catch (\Exception $e) {
       \Drupal::logger('local_contexts_integration')->error('API Error: @message', ['@message' => $e->getMessage()]);
-      return NULL;
+      return [];
     }
   }
+
 }
