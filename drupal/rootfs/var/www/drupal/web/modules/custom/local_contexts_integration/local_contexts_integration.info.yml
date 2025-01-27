@@ -3,6 +3,18 @@ type: module
 description: "Integrates the Local Contexts API with Islandora to support Traditional Knowledge Labels to aid in digital collections."
 package: Custom
 core_version_requirement: ^10
+php: '>=8.1'
 dependencies:
   - drupal:system
   - drupal:block
+  - drupal:field
+  - drupal:media
+  - drupal:jsonapi
+  - drupal:config
+  - drupal:views
+  - drupal:node
+
+
+configure: local_contexts_integration.settings
+project: local_contexts_integration
+version: 1.0.0

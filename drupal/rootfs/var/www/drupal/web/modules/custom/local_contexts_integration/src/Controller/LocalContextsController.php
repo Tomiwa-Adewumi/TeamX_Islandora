@@ -5,6 +5,8 @@ namespace Drupal\local_contexts_integration\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\Entity\Node;
 
 /**
  * Handles API calls to Local Contexts.
@@ -18,17 +20,27 @@ class LocalContextsController extends ControllerBase {
   protected $http_client;
 
   /**
+   * The Route Match service for accessing route parameters.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected $route_match;
+
+  /**
    * Constructs the LocalContextsController object.
    *
    * @param \GuzzleHttp\Client $http_client
    *   The HTTP client.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The Route Match service.
    */
-  public function __construct(Client $http_client) {
+  public function __construct(Client $http_client, RouteMatchInterface $route_match) {
     $this->http_client = $http_client;
+    $this->route_match = $route_match;
   }
 
   /**
-   * Dependency injection for the HTTP client.
+   * Dependency injection for services.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container.
@@ -37,32 +49,107 @@ class LocalContextsController extends ControllerBase {
    *   An instance of the LocalContextsController.
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('http_client'));
+    return new static(
+      $container->get('http_client'),
+      $container->get('current_route_match')
+    );
   }
 
   /**
-   * Fetch data from the Local Contexts API.
-   *
-   * @return array|null
-   *   The API response data as an associative array, or NULL on failure.
-   */
+  * Fetch project data, handling the node retrieval from the route.
+  *
+  * @return array
+  *   The processed API response as a structured array, or an empty array on failure.
+  */
   public function fetchProjectData() {
-    // Get the API key and project ID from configuration.
+    $node = $this->route_match->getParameter('node');
+
+    if ($node instanceof Node) {
+      return $this->fetchProjectDataFromNode($node);
+    }
+
+    $message = $node === NULL
+      ? 'No node found in the current route.'
+      : 'The route parameter is not a valid Node entity.';
+
+    \Drupal::logger('local_contexts_integration')->warning($message);
+    return [];
+  }
+
+
+  /**
+   * Fetch project data using a specific node.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The node entity.
+   *
+   * @return array
+   *   The structured response data.
+   */
+  private function fetchProjectDataFromNode(Node $node) {
+    $config = \Drupal::config('local_contexts_integration.settings');
+    $field_identifier = $config->get('field_identifier');
+
+    if (!$node->hasField($field_identifier) || $node->get($field_identifier)->isEmpty()) {
+      \Drupal::logger('local_contexts_integration')->warning("Field '$field_identifier' is missing or empty on node ID: {$node->id()}");
+      return [];
+    }
+
+    $project_id = $node->get($field_identifier)->value;
+    $raw_data = $this->performApiCall($project_id);
+
+    // Filter and structure the API response.
+    return $this->filterApiResponse($raw_data);
+  }
+
+  
+  /**
+   * Filter the API response to keep only specified fields.
+   *
+   * @param array $data
+   *   The original API response data.
+   *
+   * @return array
+   *   The filtered response data.
+   */
+  private function filterApiResponse(array $data) {
+    return [
+      'unique_id' => $data['unique_id'] ?? null,
+      'title' => $data['title'] ?? null,
+      'date_added' => $data['date_added'] ?? null,
+      'date_modified' => $data['date_modified'] ?? null,
+      'tk_labels' => $data['tk_labels'] ?? [],
+    ];
+  }
+
+
+  /**
+   * Perform the actual API call to fetch project data.
+   *
+   * @param string $project_id
+   *   The project ID to fetch data for.
+   *
+   * @return array
+   *   The raw API response data as an associative array, or an empty array on failure.
+   */
+  private function performApiCall(string $project_id) {
     $config = \Drupal::config('local_contexts_integration.settings');
     $api_key = $config->get('api_key');
-    $project_id = $config->get('project_id');
+    $api_url = $config->get('api_url');
 
-    // Get the API key and project ID from configuration.
-    // $config = \Drupal::config('local_contexts_integration.settings');
-    // $api_key = "SGRhUk45RXYuRlV5NVFydEt2M0l5V2lXY0pqcGxGZGdvQ280Nk9NWlA";
-    // $project_id = "452cb2ab-f26d-46c5-ac96-4fddad717286";
+    if (empty($api_url) || empty($api_key)) {
+      \Drupal::logger('local_contexts_integration')->error('API URL or API Key is not configured.');
+      return [];
+    }
 
+    $url = $api_url . '/' . $project_id . '/';
 
-    // Build the API endpoint URL.
-    $url = 'https://sandbox.localcontextshub.org/api/v2/projects/' . $project_id . '/';
+    if (!filter_var($url, FILTER_VALIDATE_URL)) {
+      \Drupal::logger('local_contexts_integration')->error('Invalid API URL: @url', ['@url' => $url]);
+      return [];
+    }
 
     try {
-      // Perform the API call with the updated header.
       $response = $this->http_client->get($url, [
         'headers' => [
           'X-Api-Key' => $api_key,
@@ -70,37 +157,15 @@ class LocalContextsController extends ControllerBase {
         ],
       ]);
 
-      // Decode and return the JSON response.
-      return json_decode($response->getBody(), TRUE);
+      // Decode the JSON response into an associative array.
+      $data = json_decode($response->getBody(), TRUE);
+
+
+      return is_array($data) ? $data : [];
     } catch (\Exception $e) {
-      // Log any errors that occur.
       \Drupal::logger('local_contexts_integration')->error('API Error: @message', ['@message' => $e->getMessage()]);
-      return NULL;
+      return [];
     }
   }
 
-  /**
-   * Test fetching data from the Local Contexts API.
-   *
-   * @return array
-   *   A render array displaying the fetched data or an error message.
-   */
-  public function testFetchProjectData() {
-    // Call the fetchProjectData method.
-    $data = $this->fetchProjectData();
-
-    // Display the output or an error message.
-    if ($data) {
-      return [
-        '#type' => 'markup',
-        '#markup' => '<pre>' . print_r($data, TRUE) . '</pre>',
-      ];
-    }
-    else {
-      return [
-        '#type' => 'markup',
-        '#markup' => '<p>No data fetched. Check logs for errors.</p>',
-      ];
-    }
-  }
 }
