@@ -1,5 +1,8 @@
 services:
+  # Defines the service for the Local Contexts module's controller.
   local_contexts_integration.controller:
+    # Specifies the fully qualified class name of the service.
     class: Drupal\local_contexts_integration\Controller\LocalContextsController
+    # Injects required services into the controller via dependency injection.
     arguments: ["@http_client", "@current_route_match"]
 
