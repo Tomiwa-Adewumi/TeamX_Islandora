@@ -1,11 +1,18 @@
+# Defines the route for the Local Contexts Integration settings page.
 local_contexts_integration.settings:
+  # The URL path for accessing the module's configuration settings.
   path: "/admin/config/local-contexts-integration"
+
+  # Default values for the route, including the form handler and page title.
   defaults:
-    _form: '\Drupal\local_contexts_integration\Form\LocalContextsSettingsForm'
-    _title: "Local Contexts Integration Settings"
+    _form: '\Drupal\local_contexts_integration\Form\LocalContextsSettingsForm' # The form class that handles the settings form.
+    _title: "Local Contexts Integration Settings" # The title displayed on the settings page.
+
+  # Access control: Users must have this permission to view the page.
   requirements:
-    _permission: "administer site configuration"
+    _permission: "administer site configuration" # Restricts access to users with "administer site configuration" permission.
+
+  # Additional route options.
   options:
-    _admin_route: TRUE
-
-
+    _admin_route: TRUE # Marks this as an admin configuration route.
+    _route_provider: config_translation.config_translation # Enables support for configuration translation.
