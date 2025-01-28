@@ -167,5 +167,28 @@ class LocalContextsController extends ControllerBase {
       return [];
     }
   }
+  /**
+ * Implements hook_install().
+ */
+function local_contexts_integration_install() {
+  // Automatically place the block in the sidebar_second region.
+  $block = \Drupal\block\Entity\Block::create([
+    'id' => 'project_data_block', // A unique machine name for the block instance.
+    'plugin' => 'local_contexts_block', // The plugin ID from the @Block annotation in your block class.
+    'region' => 'sidebar', // Adjust based on your theme's available regions.
+    'theme' => 'local_contexts_block', // Replace with the machine name of your theme.
+    'visibility' => [
+      'node_type' => [
+        'id' => 'node_type',
+        'contexts' => ['node'],
+        'negate' => FALSE,
+        'node_types' => ['repository'], // Restrict block visibility to "repository" content type.
+      ],
+    ],
+    'status' => TRUE, // Ensure the block is enabled.
+  ]);
+  $block->save();
+}
+
 
 }
