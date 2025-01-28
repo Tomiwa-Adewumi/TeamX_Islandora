@@ -30,7 +30,7 @@ class LocalContextsSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Field Identifier'),
       '#default_value' => $config->get('field_local_context'),
-      '#description' => $this->t('Enter the default Field Identifier to use for API calls.'),
+      '#description' => $this->t('Enter the Field Identifier to use for API calls.'),
       '#required' => TRUE,
     ];
 
@@ -39,7 +39,7 @@ class LocalContextsSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('API Key'),
       '#default_value' => $config->get('api_key'),
-      '#description' => $this->t('Enter your API key for accessing Local Contexts.'),
+      '#description' => $this->t('Enter API key for accessing Local Contexts.'),
       '#required' => TRUE,
     ];
 
@@ -73,7 +73,7 @@ class LocalContextsSettingsForm extends ConfigFormBase {
     }
 
     // Validate the Project ID.
-    if (!$this->validateProjectId($field_identifier)) {
+    if (!$this->validateFieldIdentifier($field_identifier)) {
       $form_state->setErrorByName('field_identifier', $this->t('The Field identifier is invalid.'));
       return;
     }
@@ -88,6 +88,7 @@ class LocalContextsSettingsForm extends ConfigFormBase {
     $this->config('local_contexts_integration.settings')
       ->set('api_key', $apiKey)
       ->set('field_identifier', $field_identifier)
+      ->set('apiBaseUrl', $apiBaseUrl)
       ->save();
 
     parent::submitForm($form, $form_state);
@@ -115,7 +116,7 @@ class LocalContextsSettingsForm extends ConfigFormBase {
    * @return bool
    *   TRUE if the Project ID is valid, FALSE otherwise.
    */
-  protected function validateProjectId($field_identifier) {
+  protected function validateFieldIdentiier($field_identifier) {
     return !empty($field_identifier); // Simplified validation.
   }
 
