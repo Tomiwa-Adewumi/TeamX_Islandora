@@ -142,7 +142,8 @@ class LocalContextsController extends ControllerBase {
       return [];
     }
 
-    $url = $api_url . '/' . $project_id . '/';
+    $url = $api_url . '/projects/' . $project_id . '/';
+
 
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
       \Drupal::logger('local_contexts_integration')->error('Invalid API URL: @url', ['@url' => $url]);
