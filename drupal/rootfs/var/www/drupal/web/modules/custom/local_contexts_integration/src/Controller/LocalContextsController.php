@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Cache\CacheBackendInterface;
 
 /**
  * Handles API calls to Local Contexts.
@@ -27,16 +28,28 @@ class LocalContextsController extends ControllerBase {
   protected $route_match;
 
   /**
+   * The cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+
+
+  /**
    * Constructs the LocalContextsController object.
    *
    * @param \GuzzleHttp\Client $http_client
    *   The HTTP client.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The Route Match service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend service.
    */
-  public function __construct(Client $http_client, RouteMatchInterface $route_match) {
+  public function __construct(Client $http_client, RouteMatchInterface $route_match, CacheBackendInterface $cache) {
     $this->http_client = $http_client;
     $this->route_match = $route_match;
+    $this->cache = $cache;
   }
 
   /**
@@ -51,7 +64,8 @@ class LocalContextsController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('http_client'),
-      $container->get('current_route_match')
+      $container->get('current_route_match'),
+      $container->get('cache.local_contexts_integration')
     );
   }
 
@@ -86,21 +100,45 @@ class LocalContextsController extends ControllerBase {
    * @return array
    *   The structured response data.
    */
-  private function fetchProjectDataFromNode(Node $node) {
+  protected function fetchProjectDataFromNode(Node $node) {
     $config = \Drupal::config('local_contexts_integration.settings');
     $field_identifier = $config->get('field_identifier');
 
     if (!$node->hasField($field_identifier) || $node->get($field_identifier)->isEmpty()) {
-      \Drupal::logger('local_contexts_integration')->warning("Field '$field_identifier' is missing or empty on node ID: {$node->id()}");
-      return [];
+        \Drupal::logger('local_contexts_integration')->warning("Field '$field_identifier' is missing or empty on node ID: {$node->id()}");
+        return [];
     }
 
     $project_id = $node->get($field_identifier)->value;
-    $raw_data = $this->performApiCall($project_id);
+    $cid = 'local_contexts_project:' . $project_id;
+    
+    // Check if data is already cached
+    if ($cache = $this->cache->get($cid)) {
+        \Drupal::logger('local_contexts_integration')->notice("Cache HIT for Project ID: $project_id");
+        return $cache->data;
+    }
 
-    // Filter and structure the API response.
-    return $this->filterApiResponse($raw_data);
+    \Drupal::logger('local_contexts_integration')->notice("Cache MISS for Project ID: $project_id, Fetching from API");
+
+    $raw_data = $this->performApiCall($project_id);
+    if (empty($raw_data) || !is_array($raw_data)) {
+        \Drupal::logger('local_contexts_integration')->warning("API returned empty or invalid data for Project ID: $project_id");
+        return [];
+    }
+
+    $filtered_data = $this->filterApiResponse($raw_data);
+
+    if ($this->isFilteredDataEmpty($filtered_data)) {
+        \Drupal::logger('local_contexts_integration')->warning("Filtered data is empty for Project ID: $project_id, not caching.");
+        return [];
+    }
+
+    $expire_time = REQUEST_TIME + (60 * 60 * 24 * 7);
+    $this->cache->set($cid, $filtered_data, $expire_time, ['local_contexts_project']);
+
+    return $filtered_data;
   }
+
 
   
   /**
@@ -112,7 +150,7 @@ class LocalContextsController extends ControllerBase {
    * @return array
    *   The filtered response data.
    */
-  private function filterApiResponse(array $data) {
+  protected function filterApiResponse(array $data) {
     return [
       'unique_id' => $data['unique_id'] ?? null,
       'title' => $data['title'] ?? null,
@@ -132,7 +170,7 @@ class LocalContextsController extends ControllerBase {
    * @return array
    *   The raw API response data as an associative array, or an empty array on failure.
    */
-  private function performApiCall(string $project_id) {
+  protected function performApiCall(string $project_id) {
     $config = \Drupal::config('local_contexts_integration.settings');
     $api_key = $config->get('api_key');
     $api_url = $config->get('api_url');
@@ -167,6 +205,24 @@ class LocalContextsController extends ControllerBase {
       \Drupal::logger('local_contexts_integration')->error('API Error: @message', ['@message' => $e->getMessage()]);
       return [];
     }
+  }
+
+  /**
+   * Checks if the filtered API response contains actual values.
+   *
+   * @param array $filtered_data
+   *   The processed API response.
+   *
+   * @return bool
+   *   TRUE if the data is empty, FALSE otherwise.
+   */
+  protected function isFilteredDataEmpty(array $filtered_data) {
+    foreach ($filtered_data as $key => $value) {
+        if (!empty($value)) {
+            return FALSE; // Data contains actual values
+        }
+    }
+    return TRUE; // Data is completely empty
   }
 
 }
