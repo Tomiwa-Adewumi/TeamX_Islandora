@@ -1,5 +1,26 @@
 {
     "require": {
         "drupal/core-recommended": "^10"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "drupal/core-dev": "^10.4"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true,
+            "tbachert/spi": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "autoload": {
+        "classmap": [
+            "assets/IslandoraStarterSite.php"
+        ],
+        "psr-4": {
+        "Drupal\\Tests\\": "web/modules/custom/local_contexts_integration/tests/src/Unit/Controller/",
+        "Drupal\\local_contexts_integration\\": "web/modules/custom/local_contexts_integration/src/Controller/"
+        }
     }
 }
