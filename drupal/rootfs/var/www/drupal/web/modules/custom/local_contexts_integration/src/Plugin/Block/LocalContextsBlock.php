@@ -72,6 +72,9 @@ class LocalContextsBlock extends BlockBase implements ContainerFactoryPluginInte
     // Fetch data from the Local Contexts controller.
     $data = $this->localContextsController->fetchProjectData();
 
+    $form = \Drupal::formBuilder()->getForm('Drupal\local_contexts_integration\Form\TkLabelDisplayForm');
+    \Drupal::logger('local_contexts_integration')->notice('Form: ' . print_r(\Drupal::formBuilder()->getForm('Drupal\local_contexts_integration\Form\TkLabelDisplayForm'), TRUE));
+
     
     // Ensure the data structure is valid and defaults are set.
     $unique_id = $data['unique_id'] ?? 'N/A';
@@ -80,21 +83,24 @@ class LocalContextsBlock extends BlockBase implements ContainerFactoryPluginInte
     $date_modified = $data['date_modified'] ?? 'Unknown';
     $tk_labels = $data['tk_labels'] ?? [];
 
-    if ($display_option === 'name_only') {
+    if ($display_option === 'name_only' && !empty($tk_labels)) {
       foreach ($tk_labels as &$label) {
-        unset($label['text']); // Remove text if only names should be shown.
+          if (isset($label['label_text'])) {
+              unset($label['label_text']); // Ensure correct key is removed
+          }
       }
+      unset($label); // Important: Unset the reference to prevent side effects
     }
 
     // Render the block with structured data.
     return [
-      'form' => \Drupal::formBuilder()->getForm('Drupal\local_contexts_integration\Form\TkLabelDisplayForm'),
       '#theme' => 'local_contexts_block',
       '#unique_id' => $unique_id,
       '#title' => $title,
       '#date_added' => $date_added,
       '#date_modified' => $date_modified,
       '#tk_labels' => $tk_labels,
+      '#form' => $form,
       '#attached' => [
         'library' => [
           'local_contexts_integration/tk_labels',
@@ -103,8 +109,10 @@ class LocalContextsBlock extends BlockBase implements ContainerFactoryPluginInte
       '#cache' => [
         'max-age' => 0,
       ],
+
     ];
   }
+  
 
   /**
    * {@inheritdoc}

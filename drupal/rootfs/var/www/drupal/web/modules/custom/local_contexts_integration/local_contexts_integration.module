@@ -10,7 +10,7 @@
  */
 function local_contexts_integration_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
   if ($route_name === 'help.page.local_contexts_integration') {
-    return '<p>' . t('Provides integration with the Local Contexts API for displaying Traditional Knowledge Labels.') . '</p>';
+    return '<p>' . \Drupal::translation()->translate('Provides integration with the Local Contexts API for displaying Traditional Knowledge Labels.') . '</p>';
   }
 }
 
@@ -25,6 +25,7 @@ function local_contexts_integration_theme() {
         'title' => '',
         'date_added' => '',
         'date_modified' => '',
+        'form' => NULL,
         'tk_labels' => [],
       ],
       'template' => 'local-contexts-block',

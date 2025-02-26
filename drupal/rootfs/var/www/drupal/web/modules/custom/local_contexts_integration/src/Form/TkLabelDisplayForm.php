@@ -52,7 +52,7 @@ class TkLabelDisplayForm extends FormBase {
       '#title' => $this->t('TK Label Display Option'),
       '#options' => [
         'both' => $this->t('Show both name and text'),
-        'name_only' => $this->t('Show only the name'),
+        'name_only' => $this->t('Show name only'),
       ],
       '#default_value' => $default_value,
     ];
