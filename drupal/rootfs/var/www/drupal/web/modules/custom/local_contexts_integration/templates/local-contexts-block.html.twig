@@ -22,7 +22,8 @@
             />
             <div class="tk-label-text-container">
               <strong>{{ label.name|default('No Label Title')|e('html') }}</strong>: 
-              {{ label.label_text|default('No text')|e('html') }}
+              {# changed label_text to default_text #}
+              {{ label.default_text|default('No text')|e('html') }}
             </div>
           </a>
         </li>

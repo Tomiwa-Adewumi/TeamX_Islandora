@@ -1,0 +1,27 @@
+#toggle-button-container {
+    width: 100%; /* Span the full width of the block */
+    background-color: #007bff; /* Blue background for the entire container */
+    text-align: center; /* Center the button horizontally */
+    padding: 5px 0; /* Reduce vertical padding */
+}
+
+#toggle-form-button {
+    display: inline-block; /* Make the button inline-block for centering */
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 14px; /* Reduce font size */
+    padding: 5px 15px; /* Reduce padding */
+    border-radius: 3px; /* Optional: Slightly rounded corners */
+    background-color: #007bff; /* Blue background for the button */
+    line-height: 1.2; /* Reduce line height */
+}
+
+#toggle-form-button:hover {
+    background-color: #0056b3; /* Hover effect */
+}
+
+#form-container {
+    display: none; /* Initially hide the form container */
+    margin-top: 10px; /* Add some spacing between the button and the form */
+}

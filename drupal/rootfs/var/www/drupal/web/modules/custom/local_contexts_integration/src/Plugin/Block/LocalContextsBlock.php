@@ -85,8 +85,9 @@ class LocalContextsBlock extends BlockBase implements ContainerFactoryPluginInte
 
     if ($display_option === 'name_only' && !empty($tk_labels)) {
       foreach ($tk_labels as &$label) {
-          if (isset($label['label_text'])) {
-              unset($label['label_text']); // Ensure correct key is removed
+        // changed label_text to defailt_text
+          if (isset($label['default_text'])) {
+              unset($label['default_text']); // Ensure correct key is removed
           }
       }
       unset($label); // Important: Unset the reference to prevent side effects

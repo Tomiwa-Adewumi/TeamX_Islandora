@@ -8,3 +8,14 @@ tk_labels:
   dependencies:
     - core/jquery
     - core/drupal
+
+toggle_form:
+  version: 1.x
+  js:
+    js/toggle_form.js: {}
+  css:
+    theme:
+      css/toggle_form.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal.icon
