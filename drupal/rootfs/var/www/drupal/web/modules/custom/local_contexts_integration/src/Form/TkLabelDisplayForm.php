@@ -57,9 +57,18 @@ class TkLabelDisplayForm extends FormBase {
       '#default_value' => $default_value,
     ];
 
+    // Apply button
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Apply'),
+      '#attributes' => ['onclick' => 'window.close(); return true;'],
+    ];
+
+    // Exit button (does not submit the form, just closes it)
+    $form['exit'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Exit'),
+      '#attributes' => ['onclick' => 'window.close(); return false;'],
     ];
 
     return $form;
