@@ -49,9 +49,11 @@ class TkLabelDisplayForm extends FormBase {
 
     // Add a container for the toggle button
     $form['toggle_button_container'] = [
-        '#markup' => '<div id="toggle-button-container">
-                        <div id="toggle-form-button">Settings</div>
-                      </div>',
+      '#markup' => '<div id="toggle-button-container">
+                      <div id="toggle-form-button">
+                          <i class="fas fa-cog"></i>
+                      </div>
+                    </div>',
     ];
 
     // Wrap the form elements in a container that can be toggled
