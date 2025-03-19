@@ -1,0 +1,3 @@
+[submodule "drupal/rootfs/var/www/drupal/web/modules/custom/local_contexts_integration"]
+	path = drupal/rootfs/var/www/drupal/web/modules/custom/local_contexts_integration
+	url = git@github.com:EmmanuelOgbole/local_contexts_integration.git
