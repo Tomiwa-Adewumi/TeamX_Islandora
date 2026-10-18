@@ -42,16 +42,6 @@ The integration reads the current Drupal node, looks up its project identifier, 
 | Development infrastructure | Docker Compose and Islandora DevOps scaffolding |
 | Test structure | PHPUnit unit, kernel, and functional tests |
 
-## My contribution — Tomiwa Adewumi
-
-This was a team project. My contributions included cache configuration and controller changes, test structure, and module installation behavior. The following links show the work in context:
-
-- [Cache setup, controller changes, and test structure](https://github.com/Tomiwa-Adewumi/TeamX_Islandora/commit/213e8886)
-- [Module implementation update](https://github.com/Tomiwa-Adewumi/TeamX_Islandora/commit/13e870fc)
-- [Installation UUID fix](https://github.com/Tomiwa-Adewumi/TeamX_Islandora/pull/28)
-
-The related standalone module also contains my [Twig template updates](https://github.com/EmmanuelOgbole/local_contexts_integration/commit/d8ea522ede1fd0332b8cbe5a38d9ebe3dc11e963) and [label-display JavaScript updates](https://github.com/EmmanuelOgbole/local_contexts_integration/commit/f6431b44c264794988c5504824c666b74afb06c4).
-
 ## Explore the implementation
 
 The custom module lives at [`drupal/rootfs/var/www/drupal/web/modules/custom/local_contexts_integration`](drupal/rootfs/var/www/drupal/web/modules/custom/local_contexts_integration).
